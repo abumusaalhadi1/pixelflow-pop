@@ -1,68 +1,97 @@
-# PixelFlow (POP Raylib Project)
+# PixelFlow
+## Principle of Programming - Raylib Particle Simulation
 
-Interactive particle simulation written in C with Raylib.
+## Project Overview
 
-## Assessment Notes
+## Project Overview
 
-AI/external code acknowledgement: see [AI_USAGE.md](AI_USAGE.md).
+PixelFlow is an interactive sandbox-style particle simulation developed in C using the Raylib graphics library. In this game, every particle is represented as a single pixel on a two-dimensional grid. Each pixel acts as an independent unit with its own state and behaviour, allowing realistic material interactions to emerge from simple programmed rules.
 
-# Building
+Different particle types follow specific physical behaviours such as gravity, fluid flow, combustion, and chemical reactions. Through these rule-based interactions, complex and dynamic patterns naturally emerge within the simulation.
 
-To build run the command:
+This project was developed as part of the Principle of Programming module to demonstrate structured programming, modular design, state management, abstraction, and real-time simulation techniques.
 
-```bash
+## AI and External Code Acknowledgement
+
+All use of AI tools and any external assistance is documented in [AI_USAGE.md](AI_USAGE.md), in accordance with the module assessment requirements.
+
+## Build Instructions
+
+The project is compiled to WebAssembly using the POP build environment.
+
+To build the application, the following command is executed:
+
 /opt/pop/bin/build-wasm.sh src/main.c src/grid.c src/particle.c src/physics.c src/render.c src/ui.c
-```
 
-This will generate a directory *out* with the WASM and index.html files for the 
-Raylib program.
+This command generates an out directory containing:
 
-# Running
+The compiled .wasm file
 
-The very first time you run a POP WASM application you must run the command:
+Supporting JavaScript files
 
-```bash
+An index.html file required to run the simulation in a web browser
+
+## Initial Setup (First-Time Execution)
+
+Before running a POP WebAssembly application for the first time, a port must be allocated:
+
 /opt/pop/bin/allocate_port.sh
-```
 
-You might need to start a new terminal instance for the update to take effect.
-To check that everything is fine run the command:
+After allocation, a new terminal session may be required for the environment variable to update correctly.
 
-```bash
+The allocated port number can be verified using:
+
 echo $MY_PORT
-```
 
-This should output a 5 digit number.
+This should return a five-digit port number.
 
+## Running the Application
 
-To run the Raylib program in *out* simply run the command:
+To start the application, the following command is executed:
 
-```bash
 /opt/pop/bin/run-wasm.sh
-```
 
-This will run a web server that serves the *out* on the port you allocated above. This is forwarded from the 
-remote server to your local machine, which means you can simply open the corresponding web page within a browser 
-on your local machine using the address:
+This launches a web server that serves the contents of the out directory on the allocated port. The server forwards from the POP remote environment to the local machine.
 
-```bash
+The simulation can then be accessed in a browser via:
+
 localhost:XXXXX
-```
 
-where *XXXXX* is the port number you allocated above.
+where XXXXX corresponds to the allocated port number.
 
-# Controls
+## Simulation Controls
 
-- `1` Sand
-- `2` Water
-- `3` Stone
-- `4` Fire
-- `5` Smoke
-- `6` Wood
-- `7` Acid
-- `0` Eraser particle
-- `[` / `]` Brush size down/up
-- `Space` Pause/resume simulation
-- `C` Clear grid
-- Mouse left button: paint
-- Mouse right button: erase
+The following controls are implemented within the application:
+
+Key	Function
+1	Sand
+2	Water
+3	Stone
+4	Fire
+5	Smoke
+6	Wood
+7	Acid
+0	Eraser particle
+[ / ]	Decrease / Increase brush size
+Space	Pause / Resume simulation
+C	Clear grid
+Left Mouse Button	Paint particles
+Right Mouse Button	Erase particles
+
+## Technical Structure
+
+The project follows a modular architecture, separating responsibilities across multiple source files:
+
+main.c - Program entry point and main loop
+
+grid.c - Grid data structure and management
+
+particle.c - Particle definitions and state handling
+
+physics.c - Simulation logic and behaviour rules
+
+render.c - Rendering logic using Raylib
+
+ui.c - User input and interface handling
+
+This modular design improves readability, maintainability, and ease of debugging, which aligns with the learning outcomes of the module.
