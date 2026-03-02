@@ -1,5 +1,7 @@
 #include "ui.h"
 
+#include <stdlib.h>
+
 #include "raylib.h"
 
 /*
@@ -15,20 +17,11 @@ static void selectParticleFromKeyboard(UIState *ui) {
     } else if (IsKeyPressed(KEY_FOUR)) {
         ui->selectedType = PARTICLE_FIRE;
     } else if (IsKeyPressed(KEY_FIVE)) {
-        ui->selectedType = PARTICLE_SMOKE;
-    } else if (IsKeyPressed(KEY_SIX)) {
         ui->selectedType = PARTICLE_WOOD;
-    } else if (IsKeyPressed(KEY_SEVEN)) {
+    } else if (IsKeyPressed(KEY_SIX)) {
         ui->selectedType = PARTICLE_ACID;
     } else if (IsKeyPressed(KEY_ZERO)) {
         ui->selectedType = PARTICLE_EMPTY;
-    }
-    
-    // Brush size controls with bracket keys
-    if (IsKeyPressed(KEY_LEFT_BRACKET)) {
-        if (ui->brushSize > 1) ui->brushSize--;
-    } else if (IsKeyPressed(KEY_RIGHT_BRACKET)) {
-        if (ui->brushSize < 6) ui->brushSize++;
     }
 }
 
@@ -36,27 +29,58 @@ static void selectParticleFromKeyboard(UIState *ui) {
  * paintAtMouse writes particles into cells under the mouse brush.
  */
 static void paintAtMouse(const UIState *ui, Grid *grid) {
+    if (!IsCursorOnScreen()) {
+        return;
+    }
+
     Vector2 mouse = GetMousePosition();
     int centerX = (int)(mouse.x / CELL_SIZE);
     int centerY = (int)(mouse.y / CELL_SIZE);
-    int brushRadius = ui->brushSize;
+    const int brushRadius = 1;
+    bool leftDown = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
+    bool rightDown = IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
 
-    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+    if (!leftDown && !rightDown) {
+        return;
+    }
+
+    if (!inBounds(grid, centerX, centerY)) {
+        return;
+    }
+
+    if (leftDown) {
+        if (ui->selectedType == PARTICLE_FIRE) {
+            // Approximate a 0.5-sized brush on integer cells: center always, plus one
+            // adjacent cell half the time.
+            setParticle(grid, centerX, centerY, createParticle(ui->selectedType));
+            if (rand() % 2 == 0) {
+                int dir = rand() % 4;
+                int offsetX[4] = {1, -1, 0, 0};
+                int offsetY[4] = {0, 0, 1, -1};
+                setParticle(
+                    grid,
+                    centerX + offsetX[dir],
+                    centerY + offsetY[dir],
+                    createParticle(ui->selectedType));
+            }
+            return;
+        }
+
         int dx, dy;
         for (dy = -brushRadius; dy <= brushRadius; dy++) {
             for (dx = -brushRadius; dx <= brushRadius; dx++) {
-                if (dx*dx + dy*dy <= brushRadius*brushRadius) {
+                if (dx * dx + dy * dy <= brushRadius * brushRadius) {
                     setParticle(grid, centerX + dx, centerY + dy, createParticle(ui->selectedType));
                 }
             }
         }
     }
 
-    if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
+    if (rightDown) {
         int dx, dy;
         for (dy = -brushRadius; dy <= brushRadius; dy++) {
             for (dx = -brushRadius; dx <= brushRadius; dx++) {
-                if (dx*dx + dy*dy <= brushRadius*brushRadius) {
+                if (dx * dx + dy * dy <= brushRadius * brushRadius) {
                     setParticle(grid, centerX + dx, centerY + dy, createEmptyParticle());
                 }
             }
@@ -84,10 +108,6 @@ static const char *selectedTypeLabel(ParticleType type) {
         return "FIRE";
     }
     
-    if (type == PARTICLE_SMOKE) {
-        return "SMOKE";
-    }
-    
     if (type == PARTICLE_WOOD) {
         return "WOOD";
     }
@@ -104,7 +124,6 @@ static const char *selectedTypeLabel(ParticleType type) {
  */
 void initUI(UIState *ui) {
     ui->selectedType = PARTICLE_SAND;
-    ui->brushSize = 1;
     ui->isPaused = false;
 }
 
@@ -133,18 +152,15 @@ void drawUI(const UIState *ui) {
     DrawRectangle(10, 10, 540, 90, (Color){0, 0, 0, 180});
     
     // Controls text
-    DrawText("1:SAND 2:WATER 3:STONE 4:FIRE 5:SMOKE 6:WOOD 7:ACID", 20, 18, 16, RAYWHITE);
-    DrawText("0:ERASE C:CLEAR SPACE:PAUSE [ / ] :Brush Size", 20, 38, 16, RAYWHITE);
+    DrawText("1:SAND 2:WATER 3:STONE 4:FIRE 5:WOOD 6:ACID", 20, 18, 16, RAYWHITE);
+    DrawText("0:ERASE C:CLEAR SPACE:PAUSE", 20, 38, 16, RAYWHITE);
     
     // Selected particle
     DrawText(TextFormat("Selected: %s", selectedTypeLabel(ui->selectedType)), 20, 60, 18, YELLOW);
     
-    // Brush size
-    DrawText(TextFormat("Brush: %d", ui->brushSize), 250, 60, 18, (Color){100, 200, 255, 255});
-    
     // Pause indicator
     if (ui->isPaused) {
-        DrawText("PAUSED", 400, 60, 18, (Color){255, 100, 100, 255});
+        DrawText("PAUSED", 260, 60, 18, (Color){255, 100, 100, 255});
     }
     
     // FPS

@@ -68,11 +68,9 @@ Key	Function
 2	Water
 3	Stone
 4	Fire
-5	Smoke
-6	Wood
-7	Acid
+5	Wood
+6	Acid
 0	Eraser particle
-[ / ]	Decrease / Increase brush size
 Space	Pause / Resume simulation
 C	Clear grid
 Left Mouse Button	Paint particles

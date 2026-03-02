@@ -66,7 +66,7 @@ static bool trySwapParticle(Grid *grid, int fromX, int fromY, int toX, int toY, 
     // Fire burns wood
     if (source.type == PARTICLE_FIRE && destination.type == PARTICLE_WOOD) {
         // Convert wood to fire with some randomness
-        if (rand() % 10 < 3) {
+        if (rand() % 10 < 2) {
             setParticle(grid, toX, toY, createParticle(PARTICLE_FIRE));
             markUpdated(grid, updated, toX, toY);
         }
@@ -157,7 +157,7 @@ static void updateFire(Grid *grid, int x, int y, bool updated[GRID_HEIGHT][GRID_
     
     // Fire can burn wood above it
     Particle above = getParticle(grid, x, y - 1);
-    if (above.type == PARTICLE_WOOD && rand() % 10 < 3) {
+    if (above.type == PARTICLE_WOOD && rand() % 10 < 2) {
         setParticle(grid, x, y - 1, createParticle(PARTICLE_FIRE));
         markUpdated(grid, updated, x, y - 1);
     }

@@ -8,7 +8,6 @@
  */
 typedef struct {
     ParticleType selectedType;
-    int brushSize;
     bool isPaused;
 } UIState;
 
