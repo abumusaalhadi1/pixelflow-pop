@@ -1,4 +1,4 @@
-#include "particle.h"
+#include "../include/particle.h"
 
 #include <stdlib.h>
 

@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "grid.h"
-#include "physics.h"
-#include "render.h"
-#include "ui.h"
+#include "../include/grid.h"
+#include "../include/physics.h"
+#include "../include/render.h"
+#include "../include/ui.h"
 
 int main(void) {
     const int screenWidth = GRID_WIDTH * CELL_SIZE;

@@ -1,4 +1,4 @@
-#include "physics.h"
+#include "../include/physics.h"
 
 #include <stdbool.h>
 #include <stdlib.h>

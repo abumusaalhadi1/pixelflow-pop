@@ -1,4 +1,4 @@
-#include "grid.h"
+#include "../include/grid.h"
 
 /*
  * initGrid sets dimensions and clears every cell.
