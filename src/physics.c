@@ -114,10 +114,20 @@ static void updateSand(Grid *grid, int x, int y, bool updated[GRID_HEIGHT][GRID_
  */
 static void updateWater(Grid *grid, int x, int y, bool updated[GRID_HEIGHT][GRID_WIDTH]) {
     int direction;
+    bool sandAbove = false;
 
-    // Try to move down
-    if (tryMoveParticle(grid, x, y, x, y + 1, updated)) {
-        return;
+    if (inBounds(grid, x, y - 1)) {
+        Particle above = getParticle(grid, x, y - 1);
+        sandAbove = (above.type == PARTICLE_SAND);
+    }
+
+    // Give sand-above interactions priority to avoid water and sand
+    // both falling in the same simulation step.
+    if (!sandAbove) {
+        // Try to move down
+        if (tryMoveParticle(grid, x, y, x, y + 1, updated)) {
+            return;
+        }
     }
 
     // Try to move sideways (water flows through water)
@@ -126,13 +136,15 @@ static void updateWater(Grid *grid, int x, int y, bool updated[GRID_HEIGHT][GRID
         return;
     }
     
-    // Try to move sideways down (diagonal)
-    if (tryMoveParticle(grid, x, y, x + direction, y + 1, updated)) {
-        return;
-    }
+    if (!sandAbove) {
+        // Try to move sideways down (diagonal)
+        if (tryMoveParticle(grid, x, y, x + direction, y + 1, updated)) {
+            return;
+        }
 
-    // Try other diagonal
-    tryMoveParticle(grid, x, y, x - direction, y + 1, updated);
+        // Try other diagonal
+        tryMoveParticle(grid, x, y, x - direction, y + 1, updated);
+    }
 }
 
 /*
