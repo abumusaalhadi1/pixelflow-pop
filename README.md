@@ -37,7 +37,7 @@ This project was developed as part of the **Principle of Programming** module to
 
 All use of AI tools and external assistance is documented in:
 
-`AI_USAGE.md`
+[AI_USAGE.md](AI_USAGE.md)
 
 This documentation follows the module’s academic requirements for transparency in AI usage.
 
