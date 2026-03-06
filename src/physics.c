@@ -36,6 +36,40 @@ static bool tryMoveParticle(Grid *grid, int fromX, int fromY, int toX, int toY, 
 }
 
 /*
+ * tryDissolveWithAcid applies acid reaction with a delay for better visuals.
+ */
+static bool tryDissolveWithAcid(Grid *grid, int acidX, int acidY, int targetX, int targetY, bool updated[GRID_HEIGHT][GRID_WIDTH]) {
+    if (!inBounds(grid, acidX, acidY) || !inBounds(grid, targetX, targetY)) {
+        return false;
+    }
+
+    Particle acid = getParticle(grid, acidX, acidY);
+    Particle target = getParticle(grid, targetX, targetY);
+
+    if (acid.type != PARTICLE_ACID) {
+        return false;
+    }
+
+    if (target.type == PARTICLE_EMPTY || target.type == PARTICLE_ACID) {
+        return false;
+    }
+
+    // Don't dissolve every frame. This makes contact look gradual.
+    if (rand() % 100 >= 35) {
+        return false;
+    }
+
+    // Brief smoke gives visual feedback that a dissolve happened.
+    if (rand() % 4 == 0) {
+        setParticle(grid, targetX, targetY, createParticle(PARTICLE_SMOKE));
+    } else {
+        setParticle(grid, targetX, targetY, createEmptyParticle());
+    }
+    markUpdated(grid, updated, targetX, targetY);
+    return true;
+}
+
+/*
  * trySwapParticle swaps source with destination if destination is lighter.
  */
 static bool trySwapParticle(Grid *grid, int fromX, int fromY, int toX, int toY, bool updated[GRID_HEIGHT][GRID_WIDTH]) {
@@ -56,11 +90,9 @@ static bool trySwapParticle(Grid *grid, int fromX, int fromY, int toX, int toY, 
         return true;
     }
     
-    // Acid destroys other particles
-    if (source.type == PARTICLE_ACID && destination.type != PARTICLE_EMPTY && destination.type != PARTICLE_ACID) {
-        setParticle(grid, toX, toY, createEmptyParticle());
-        markUpdated(grid, updated, toX, toY);
-        return true;
+    // Acid dissolves other particles gradually.
+    if (source.type == PARTICLE_ACID) {
+        return tryDissolveWithAcid(grid, fromX, fromY, toX, toY, updated);
     }
     
     // Fire burns wood
@@ -233,6 +265,16 @@ static void updateSmoke(Grid *grid, int x, int y, bool updated[GRID_HEIGHT][GRID
  */
 static void updateAcid(Grid *grid, int x, int y, bool updated[GRID_HEIGHT][GRID_WIDTH]) {
     int direction;
+    Particle above;
+
+    // Keep acid in place while it corrodes stone/wood directly above.
+    if (inBounds(grid, x, y - 1)) {
+        above = getParticle(grid, x, y - 1);
+        if (above.type == PARTICLE_STONE || above.type == PARTICLE_WOOD) {
+            trySwapParticle(grid, x, y, x, y - 1, updated);
+            return;
+        }
+    }
     
     // Try to move down
     if (tryMoveParticle(grid, x, y, x, y + 1, updated)) {
@@ -251,7 +293,18 @@ static void updateAcid(Grid *grid, int x, int y, bool updated[GRID_HEIGHT][GRID_
     }
     
     // Try diagonal down
-    tryMoveParticle(grid, x, y, x + direction, y + 1, updated);
+    if (tryMoveParticle(grid, x, y, x + direction, y + 1, updated)) {
+        return;
+    }
+
+    // If movement is blocked, react with nearby particles.
+    if (trySwapParticle(grid, x, y, x, y - 1, updated)) {
+        return;
+    }
+    if (trySwapParticle(grid, x, y, x + direction, y, updated)) {
+        return;
+    }
+    trySwapParticle(grid, x, y, x - direction, y, updated);
 }
 
 /*
